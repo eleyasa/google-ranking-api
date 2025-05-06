@@ -1,5 +1,5 @@
 {
-  "name": "google-ranking-api",
+  "name": "google-ranking-api-v2",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {

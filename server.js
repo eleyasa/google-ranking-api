@@ -18,20 +18,23 @@ app.post("/api/check-ranking", async (req, res) => {
   const params = new URLSearchParams({
     engine: "google",
     q: keyword,
-    google_domain: country === "tr" ? "google.com.tr" : "google.com",
-    gl: country,
+    google_domain: "google.com.tr",
+    gl: country || "tr",
     hl: language === "lang_tr" ? "tr" : "en",
-    device: device,
+    device: device || "desktop",
     api_key: SERP_API_KEY,
+    num: "100"  // ilk 100 sonucu getir
   });
 
-  const response = await fetch(`https://serpapi.com/search.json?${params}`);
-  const data = await response.json();
-
-  const results = data.organic_results || [];
-  const position = results.findIndex((r) => r.link.includes(url)) + 1;
-
-  res.json({ position: position > 0 ? position : "Bulunamadı" });
+  try {
+    const response = await fetch(`https://serpapi.com/search.json?${params}`);
+    const data = await response.json();
+    const results = data.organic_results || [];
+    const position = results.findIndex((r) => r.link.includes(url)) + 1;
+    res.json({ position: position > 0 ? position : "Bulunamadı" });
+  } catch (error) {
+    res.status(500).json({ error: "API çağrısı başarısız", detail: error.message });
+  }
 });
 
 const PORT = process.env.PORT || 10000;
