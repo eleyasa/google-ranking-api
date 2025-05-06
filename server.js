@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
 });
 
 app.post("/api/check-ranking", async (req, res) => {
-  const { url, keyword, country, language, device } = req.body;
+  const { url, keyword, country, language, device, location } = req.body;
 
   const params = new URLSearchParams({
     engine: "google",
@@ -23,15 +23,23 @@ app.post("/api/check-ranking", async (req, res) => {
     hl: language === "lang_tr" ? "tr" : "en",
     device: device || "desktop",
     api_key: SERP_API_KEY,
-    num: "100"  // ilk 100 sonucu getir
+    num: "100"
   });
+
+  if (location && location !== "Türkiye") {
+    params.set("location", `${location},Turkey`);
+  }
 
   try {
     const response = await fetch(`https://serpapi.com/search.json?${params}`);
     const data = await response.json();
     const results = data.organic_results || [];
     const position = results.findIndex((r) => r.link.includes(url)) + 1;
-    res.json({ position: position > 0 ? position : "Bulunamadı" });
+
+    res.json({
+      position: position > 0 ? position : "Bulunamadı",
+      location: location || "Türkiye"
+    });
   } catch (error) {
     res.status(500).json({ error: "API çağrısı başarısız", detail: error.message });
   }
