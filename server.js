@@ -34,11 +34,22 @@ app.post("/api/check-ranking", async (req, res) => {
     const response = await fetch(`https://serpapi.com/search.json?${params}`);
     const data = await response.json();
     const results = data.organic_results || [];
+    const ads_data = data.search_information || {};
+
     const position = results.findIndex((r) => r.link.includes(url)) + 1;
+    const page = position > 0 ? Math.ceil(position / 10) : "Bulunamadı";
+
+    const keyword_metrics = {
+      search_volume: ads_data.total_results || "Bilinmiyor",
+      competition: ads_data.competition || "Bilinmiyor",
+      average_tbm: ads_data.average_cpc ? `$${ads_data.average_cpc}` : "Bilinmiyor"
+    };
 
     res.json({
       position: position > 0 ? position : "Bulunamadı",
-      location: location || "Türkiye"
+      page: position > 0 ? page : "-",
+      location: location || "Türkiye",
+      keyword_metrics
     });
   } catch (error) {
     res.status(500).json({ error: "API çağrısı başarısız", detail: error.message });
